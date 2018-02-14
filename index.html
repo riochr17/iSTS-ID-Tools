@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <style type="text/css">
+        body{
+            padding: 0;
+            margin: 0;
+        }
+        .input_chunk{
+            padding: 10px;
+            width: 50%;
+        }
+        .button_chunk{
+            padding: 10px;
+        }
+        .word{
+            background: rgba(12, 210, 50, .7);
+            border-radius: 2px;
+            cursor: pointer;
+            display: inline-block;
+            padding: 5px;
+            margin-right: 5px;
+        }
+        .selected{
+            background: rgba(12, 210, 250, 1);
+            border-radius: 2px;
+            cursor: pointer;
+            display: inline-block;
+            padding: 5px;
+            margin-right: 5px;
+        }
+        .word:hover{
+            opacity: 0.9;
+        }
+        .chunk{
+            background: rgba(250, 100, 10, .6);
+            border-radius: 2px;
+            cursor: pointer;
+            padding: 5px; 
+            padding-right: 25px;
+            margin-right: 5px;
+            display: inline-block;
+        }
+        .right-chunk{
+            background: rgba(250, 10, 150, .8);
+        }
+        .drop_area{
+            min-height: 30px;
+            width: 40%;
+            padding: 5px;
+            display: inline-block;
+            margin-right: 5px;
+            background: rgba(250, 250, 250, .7);
+        }
+        .drop_area_b{
+            background: rgba(250, 250, 250, .7);
+        }
+        .pair_drop_area{
+            padding: 5px;
+            padding-bottom: 0px;
+            margin-bottom: 5px;
+            background: rgba(0, 0, 0, .5);
+
+        }
+        .all_drop_area{
+            padding: 5px;
+            background: rgba(0, 0, 0, .3);
+
+        }
+        select{
+            height: 40px;
+            padding: 10px;
+            margin-left: 8px;
+        }
+        .edit_box{
+            width: 2em;
+            padding: 8px;
+            font-size: 1.2em;
+            margin-left: 10px;
+        }
+        #result{
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, .4);
+        }
+
+        #result #resultx{
+            position: absolute;
+            width: 80%;
+            height: 70%;
+            top: 15%;
+            left: 10%;
+            background: white;
+            box-shadow: 0 0 150px rgba(0, 0, 0, .5);
+        }
+        #result #resultx textarea{
+            width: 100%;
+            height: 100%;
+            font-family: monospace;
+            font-size: 2em;
+            padding: 10px;
+        }
+        #result_close{
+            cursor: pointer;
+            padding: 10px;
+            font-size: 2em;
+            font-family: monospace;
+            font-weight: bold;
+            background: black;
+            color: white;
+            right: 0%;
+            top: 0%;
+            position: absolute;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+
+
+    <div id="result" style="display: none;">
+        <div id="resultx">
+            <div id="result_close">X</div>
+            <textarea id="result_textarea"></textarea>
+        </div>
+    </div>
+
+    <div style="padding: 15px">
+        <!-- index -->
+        <div>GLOBAL INDEX <input type="text" class="input_chunk" name="" id="global_index" style="width: 25px" /></div>
+        <br/>
+
+        <!-- first -->
+        <div>CHUNK KIRI</div>
+        <div>
+            <input type="text" class="input_chunk" name="" id="input_text" />
+            <button id="submit_text" class="button_chunk">Submit Text</button>
+        </div>
+        <br/>
+        <div id="submitted_text"></div>
+        <button id="chunk_it" style="margin-top: 5px;">Chunk it!</button><br/><br/>
+
+        <!-- second -->
+        <div>CHUNK KANAN</div>
+        <div>
+            <input type="text" class="input_chunk" name="" id="input_text_2" />
+            <button id="submit_text_2" class="button_chunk">Submit Text</button>
+        </div>
+        <br/>
+        <div id="submitted_text_2"></div>
+        <button id="chunk_it_2" style="margin-top: 5px;">Chunk it!</button><br/><br/>
+
+
+        <div id="drop_area"></div><br/>
+
+        <button id="show_result">SHOW RESULT</button><br/><br/>
+        <pre>iSTS Annotator Tools</pre>
+        <pre>Credit: Rio Chandra Rajagukguk (c) 2018</pre>
+    </div>
+    <script type="text/javascript">
+
+        var Utils = {
+            'guid': () => {
+                var s4 = () => {
+                    return Math.floor((1 + Math.random()) * 0x10000)
+                        .toString(16)
+                        .substring(1);
+                }
+
+                return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+            },
+            'getEl': (id) => {
+                return document.getElementById(id);
+            }
+        }
+
+        var CLASS_TYPE = {
+            'WORD': 0,
+            'CHUNK': 1,
+            'DROP_AREA': 2,
+            'PAIR_DROP_AREA': 3,
+            'ALL_DROP_AREA': 4
+        };
+
+        // CLASS: Word
+        function Word(word){
+            this.uid = Utils.guid();
+            this.parent_uid = null;
+            this.word = word;
+            this.type = CLASS_TYPE.WORD;
+            this.is_selected = false;
+            this.word_render = (el_target_id) => {
+                Utils.getEl(el_target_id).innerHTML += "<div class='word' draggable='true' id='" + this.uid + "'>" + this.word + "</div>";
+            }
+            this.update = () => {
+                let currEl = Utils.getEl(this.uid);
+                this.is_selected = !this.is_selected;
+                if(this.is_selected){
+                    currEl.classList.add('selected');
+                }else{
+                    if(currEl.classList.contains('selected')){
+                        currEl.classList.remove('selected');
+                    }
+                }
+            }
+        }
+
+        function Label(){
+            this.uid = Utils.guid();
+            this.parent_uid = null;
+            this.label = "";
+            this.label_render = (el_target_id) => {
+                Utils.getEl(el_target_id).innerHTML += "<select id='" + this.uid + "'>\
+                    <option value='EQUI' " + (this.label == 'EQUI' ? "selected" : "") + ">EQUI</option>\
+                    <option value='SPE2' " + (this.label == 'SPE2' ? "selected" : "") + ">SPE2</option>\
+                    <option value='SPE1' " + (this.label == 'SPE1' ? "selected" : "") + ">SPE1</option>\
+                    <option value='OPPO' " + (this.label == 'OPPO' ? "selected" : "") + ">OPPO</option>\
+                    <option value='SIMI' " + (this.label == 'SIMI' ? "selected" : "") + ">SIMI</option>\
+                    <option value='REL' " + (this.label == 'REL' ? "selected" : "") + ">REL</option>\
+                    <option value='NOALI' " + (this.label == 'NOALI' ? "selected" : "") + ">NOALI</option>\
+                </select>";
+                this.addListenerChange(this);
+            }
+            this.addListenerChange = (ins_this_class) => {
+                console.log("triggered ", ins_this_class);
+                Utils.getEl(ins_this_class.uid).addEventListener("change",function () {
+                    console.log(this.value);
+                    ins_this_class.label = this.value;
+                });
+            }
+        }
+
+        function EditBox(){            
+            this.uid = Utils.guid();
+            this.parent_uid = null;
+            this.skor = 5;
+            this.edit_box_render = (el_target_id) => {
+                Utils.getEl(el_target_id).innerHTML += "<input class='edit_box' value='" + this.skor + "' type='text' id='" + this.uid + "' />";
+                this.addListenerChange(this);
+            }
+            this.addListenerChange = (ins_this_class) => {
+                Utils.getEl(ins_this_class.uid).addEventListener("keydown",function (e) {
+                    console.log(parseInt(e.key));
+                    ins_this_class.skor = parseInt(e.key);
+                });
+            }
+        }
+
+        // CLASS: Chunk
+        function Chunk(){
+            this.uid = Utils.guid();
+            this.parent_uid = null;
+            this.words = [];
+            this.chunk_index = -1;
+            this.type = CLASS_TYPE.CHUNK;
+            this.left_chunk = true;
+            this.is_selected = false;
+            this.has_placed = false;
+            this.addWord = (ins_word) => {
+                ins_word.parent_uid = this.uid;
+                this.words.push(ins_word);
+            }
+            this.chunk_render = (el_target_id) => {
+                Utils.getEl(el_target_id).innerHTML += "<div class='chunk " + (this.left_chunk ? "left-chunk" : "right-chunk") + "' draggable='" + (this.has_placed ? "false" : "true") + "' id='" + this.uid + "'></div>";
+                for(index in this.words){
+                    let wordx = this.words[index];
+                    wordx.word_render(this.uid);
+                }
+            }
+            this.getCloningData = () => {
+                var words = [];
+                this.words.forEach(function(word){
+                    words.push(word.word);
+                });
+
+                return words;
+            }
+            this.addListenerDragStart = (data, c_index) => {
+                var leftChunk = this.left_chunk;
+                if(!this.has_placed)
+                    Utils.getEl(this.uid).addEventListener('dragstart', function(e){
+                        console.log("drag start: ", data, c_index);
+                        e.dataTransfer.setData("text", data.join('`'));
+                        e.dataTransfer.setData("is_left", leftChunk);
+                        e.dataTransfer.setData("chunk_index", c_index);
+                    });
+            }
+        }
+
+        // CLASS: DropArea
+        function DropArea(){
+            this.uid = Utils.guid();
+            this.parent_uid = null;
+            this.chunk = null;
+            this.is_empty = true;
+            this.is_left = true;
+            this.type = CLASS_TYPE.DROP_AREA;
+            this.addChunk = (ins_chunk) => {
+                ins_chunk.parent_uid = this.uid;
+                this.chunk = ins_chunk;
+                this.is_empty = false;
+            }
+            this.addChunkFromWordStringList = (list_word_str, c_idx) => {
+                var ch = new Chunk();
+                ch.has_placed = true;
+                ch.left_chunk = this.is_left;
+                ch.chunk_index = c_idx;
+                list_word_str.forEach(function(str){
+                    ch.addWord(new Word(str));
+                });
+                this.chunk = ch;
+                this.is_empty = false;
+                Global_Data.shouldAddNewEmpty();
+            }
+            this.drop_area_render = (el_target_id) => {
+                Utils.getEl(el_target_id).innerHTML += "<div class='drop_area drop_area_a' draggable='false' id='" + this.uid + "'></div>";
+                
+                if(this.chunk == null)
+                    return;
+                this.chunk.chunk_render(this.uid);
+            }
+            this.drop_area_render_another = (el_target_id) => {
+                Utils.getEl(el_target_id).innerHTML += "<div class='drop_area drop_area_b' draggable='false' id='" + this.uid + "'></div>";
+                this.is_left = false;
+                if(this.chunk == null)
+                    return;
+                this.chunk.chunk_render(this.uid);
+            }
+            this.addListenerDrop = (ins_this_class) => {
+                Utils.getEl(ins_this_class.uid).addEventListener("dragover", function(e){
+                    e.preventDefault();
+                });
+                Utils.getEl(ins_this_class.uid).addEventListener("drop", function(e){
+                    e.preventDefault();
+                    let data = e.dataTransfer.getData("text");
+                    let isLeft = e.dataTransfer.getData("is_left");
+                    let chunk_index = e.dataTransfer.getData("chunk_index");
+
+                    // fuck you
+                    if((ins_this_class.is_left ? "true" : "false") != isLeft)
+                        return;
+                    if(!data)
+                        return;
+                    console.log("given data: ", data.split("`"));
+                    ins_this_class.addChunkFromWordStringList(data.split("`"), chunk_index);
+                    Global_Data.all_drop_area_render('drop_area');
+                });
+            }
+            this.addListenerDoubleClick = (ins_this_class) => {
+                Utils.getEl(ins_this_class.uid).addEventListener('dblclick', function(e){
+                    console.log("added double click listener");
+                    ins_this_class.chunk = null;
+                    ins_this_class.is_empty = true;
+                    Global_Data.all_drop_area_render('drop_area');
+                })
+            }
+        }
+
+        // CLASS: PairDropArea
+        function PairDropArea(ins_pair_a, ins_pair_b){
+            this.uid = Utils.guid();
+            this.parent_uid = null;
+            this.label = new Label();
+            this.skor = new EditBox();
+
+            this.type = CLASS_TYPE.PAIR_DROP_AREA;
+            ins_pair_a.parent_uid = this.uid;
+            ins_pair_b.parent_uid = this.uid;
+
+            this.pair_a = ins_pair_a;
+            this.pair_b = ins_pair_b;
+            this.pair_drop_area_render = (el_target_id) => {
+                Utils.getEl(el_target_id).innerHTML += "<div class='pair_drop_area' draggable='false' id='" + this.uid + "'></div>";
+                this.pair_a.drop_area_render(this.uid);
+                this.pair_b.drop_area_render_another(this.uid);
+                this.label.label_render(this.uid);
+                this.skor.edit_box_render(this.uid);
+            }
+        }
+
+        // CLASS: PairDropArea
+        function AllDropArea(){
+            this.uid = Utils.guid();
+            this.parent_uid = null;
+            this.type = CLASS_TYPE.ALL_DROP_AREA;
+            this.pair_drop_areas = [];
+            this.addPairDropArea = (ins_pair_drop_area) => {
+                ins_pair_drop_area.parent_uid = this.uid;
+                this.pair_drop_areas.push(ins_pair_drop_area);
+            }
+            this.addEmptyPairDropArea = () => {
+                var dropa = new DropArea();
+                var dropb = new DropArea();
+                var pda = new PairDropArea(dropa, dropb);
+                this.addPairDropArea(pda);
+            }
+            this.shouldAddNewEmpty = () => {
+                var last_pair_drop_area = this.pair_drop_areas[this.pair_drop_areas.length - 1];
+                if(!last_pair_drop_area.pair_a.is_empty || !last_pair_drop_area.pair_b.is_empty)
+                    Global_Data.addEmptyPairDropArea();
+            }
+            this.refreshDropListener = () => {
+                this.pair_drop_areas.forEach(function(pda){
+                    pda.pair_a.addListenerDrop(pda.pair_a);
+                    pda.pair_b.addListenerDrop(pda.pair_b);
+                    pda.pair_a.addListenerDoubleClick(pda.pair_a);
+                    pda.pair_b.addListenerDoubleClick(pda.pair_b);
+                    pda.label.addListenerChange(pda.label);
+                    pda.skor.addListenerChange(pda.skor);
+                })
+            }
+            this.all_drop_area_render = (el_target_id) => {
+                this.parent_uid = el_target_id;
+                Utils.getEl(el_target_id).innerHTML = "<div class='all_drop_area' draggable='false' id='" + this.uid + "'></div>";
+                for(index in this.pair_drop_areas){
+                    let pair_drop_areax = this.pair_drop_areas[index];
+                    pair_drop_areax.pair_drop_area_render(this.uid);
+                }
+                this.refreshDropListener();
+            }
+        }
+
+        var Global_Data = new AllDropArea();
+        // Global_Data.addPairDropArea(pda);
+        Global_Data.addEmptyPairDropArea();
+        Global_Data.all_drop_area_render('drop_area');
+
+        var Ins_Class_Submitted_Text = [];
+        var Ins_Class_Submitted_Text_2 = [];
+
+        function extractData(){
+            function printSentence(chunks){
+                var out = "";
+                chunks.forEach(function(chunk){
+                    var chunk_words = "";
+                    var i = 0;
+
+                    if(chunk.type != CLASS_TYPE.CHUNK)
+                        return;
+
+                    console.log(chunk.words);
+                    for (i = 0; i < chunk.words.length - 1; i++) {
+                        chunk_words += chunk.words[i].word + " ";
+                    }
+                    chunk_words += chunk.words[i].word + " ";
+                    out += chunk_words;
+                });
+                out += "\n\n";
+
+                return out;
+            }
+
+            function printChunks(chunks){
+                var out = "";
+                chunks.forEach(function(chunk){
+                    var chunk_words = "[";
+                    var i = 0;
+
+                    if(chunk.type != CLASS_TYPE.CHUNK)
+                        return;
+
+                    console.log(chunk.words);
+                    for (i = 0; i < chunk.words.length - 1; i++) {
+                        chunk_words += chunk.words[i].word + " ";
+                    }
+                    chunk_words += chunk.words[i].word + "] ";
+                    out += chunk_words;
+                });
+                out += "\n\n";
+
+                return out;
+            }
+            var out_chunks = printSentence(Ins_Class_Submitted_Text);
+            out_chunks += printSentence(Ins_Class_Submitted_Text_2);
+            out_chunks += printChunks(Ins_Class_Submitted_Text);
+            out_chunks += printChunks(Ins_Class_Submitted_Text_2);
+            var glob_idx = Utils.getEl('global_index').value;
+            Global_Data.pair_drop_areas.forEach(function(pda){
+                if(pda.pair_a.is_empty && pda.pair_b.is_empty)
+                    return;
+
+                let label = Utils.getEl(pda.label.uid).value;
+                let skor = Utils.getEl(pda.skor.uid).value;
+                let left_index = pda.pair_a.is_empty ? 0 : parseInt(pda.pair_a.chunk.chunk_index) + 1;
+                let right_index = pda.pair_b.is_empty ? 0 : parseInt(pda.pair_b.chunk.chunk_index) + 1;
+                out_chunks += "" + glob_idx + "|" + left_index + "|" + right_index + "|" + label + "|" + skor + "\n";
+            });
+            return out_chunks;
+        }
+
+        function getSelectionHtml() {
+            var html = "";
+            if (typeof window.getSelection != "undefined") {
+                var sel = window.getSelection();
+                if (sel.rangeCount) {
+                    var container = document.createElement("div");
+                    for (var i = 0, len = sel.rangeCount; i < len; ++i) {
+                        container.appendChild(sel.getRangeAt(i).cloneContents());
+                    }
+                    html = container.innerHTML;
+                }
+            } else if (typeof document.selection != "undefined") {
+                if (document.selection.type == "Text") {
+                    html = document.selection.createRange().htmlText;
+                }
+            }
+            return html;
+        }
+
+        // var refreshWordElementListener = () => {
+        //     let all_word_class = document.getElementsByClassName('word');
+        //     for(i = 0; i < all_word_class.length; i++){
+        //         let el = all_word_class[i];
+        //         el.addEventListener('dragstart', function(e){
+        //             e.dataTransfer.setData("text", el.innerHTML);
+        //         });
+        //     }
+        // }
+
+        function garbageArray(arr){
+            for(i in arr){
+                arr[i] = null;
+                delete arr[i];
+            }
+
+            delete arr;
+        }
+
+        function submitInputTextToViewText(){
+            // data trimmed and splitted by space
+            let data_input_list = document.getElementById("input_text").value.trim().split(/\s+/);
+            let new_data = "";
+            document.getElementById("submitted_text").innerHTML = "";
+            garbageArray(Ins_Class_Submitted_Text);
+            Ins_Class_Submitted_Text = [];
+            for(index in data_input_list){
+                let wordx = new Word(data_input_list[index]);
+                Ins_Class_Submitted_Text.push(wordx);
+                wordx.word_render("submitted_text");
+            }
+
+            Ins_Class_Submitted_Text.forEach(function(ins_class){
+                if(ins_class.type == CLASS_TYPE.WORD){
+                    Utils.getEl(ins_class.uid).addEventListener('click', function(){
+                        ins_class.update();
+                    });
+                }
+            });
+            // refreshWordElementListener();
+        }
+
+        function submitInputTextToViewText2(){
+            // data trimmed and splitted by space
+            let data_input_list = document.getElementById("input_text_2").value.trim().split(/\s+/);
+            let new_data = "";
+            document.getElementById("submitted_text_2").innerHTML = "";
+            garbageArray(Ins_Class_Submitted_Text_2);
+            Ins_Class_Submitted_Text_2 = [];
+            for(index in data_input_list){
+                let wordx = new Word(data_input_list[index]);
+                Ins_Class_Submitted_Text_2.push(wordx);
+                wordx.word_render("submitted_text_2");
+            }
+
+            Ins_Class_Submitted_Text_2.forEach(function(ins_class){
+                if(ins_class.type == CLASS_TYPE.WORD){
+                    Utils.getEl(ins_class.uid).addEventListener('click', function(){
+                        ins_class.update();
+                    });
+                }
+            });
+            // refreshWordElementListener();
+        }
+
+        function updateSubmittedInputTextToViewText(){
+            var chunk = null;
+            var removedIndex = []
+            let i = 0;
+            let index_insert_chunk = 0;
+            Ins_Class_Submitted_Text.forEach(function(ins_class){
+                if(ins_class.is_selected){
+                    removedIndex.push(i - removedIndex.length);
+                    if(chunk == null){
+                        chunk = new Chunk();
+                        index_insert_chunk = i;
+                    }
+
+                    chunk.addWord(ins_class);
+                }
+                i++;
+            });
+
+            removedIndex.forEach(function(index){
+                Ins_Class_Submitted_Text.splice(index, 1);
+            });
+
+            if(chunk != null)
+                Ins_Class_Submitted_Text.splice(index_insert_chunk, 0, chunk);
+
+            document.getElementById("submitted_text").innerHTML = "";
+            Ins_Class_Submitted_Text.forEach(function(ins_class){
+                if(ins_class.type == CLASS_TYPE.WORD){
+                    ins_class.word_render("submitted_text");
+                }
+                if(ins_class.type == CLASS_TYPE.CHUNK){
+                    ins_class.chunk_render("submitted_text");
+                }
+            });
+
+            i = 0;
+            Ins_Class_Submitted_Text.forEach(function(ins_class){
+                if(ins_class.type == CLASS_TYPE.WORD){
+                    Utils.getEl(ins_class.uid).addEventListener('click', function(){
+                        ins_class.update();
+                    });
+                }
+                if(ins_class.type == CLASS_TYPE.CHUNK){
+                    ins_class.addListenerDragStart(ins_class.getCloningData(), i);
+                }
+                i++;
+            });
+
+        }
+
+        function updateSubmittedInputTextToViewText2(){
+            var chunk = null;
+            var removedIndex = []
+            let i = 0;
+            let index_insert_chunk = 0;
+            Ins_Class_Submitted_Text_2.forEach(function(ins_class){
+                if(ins_class.is_selected){
+                    removedIndex.push(i - removedIndex.length);
+                    if(chunk == null){
+                        chunk = new Chunk();
+                        chunk.left_chunk = false;
+                        index_insert_chunk = i;
+                    }
+
+                    chunk.addWord(ins_class);
+                }
+                i++;
+            });
+
+            removedIndex.forEach(function(index){
+                Ins_Class_Submitted_Text_2.splice(index, 1);
+            });
+
+            if(chunk != null)
+                Ins_Class_Submitted_Text_2.splice(index_insert_chunk, 0, chunk);
+
+            document.getElementById("submitted_text_2").innerHTML = "";
+            Ins_Class_Submitted_Text_2.forEach(function(ins_class){
+                if(ins_class.type == CLASS_TYPE.WORD){
+                    ins_class.word_render("submitted_text_2");
+                }
+                if(ins_class.type == CLASS_TYPE.CHUNK){
+                    ins_class.chunk_render("submitted_text_2");
+                }
+            });
+
+            i = 0
+            Ins_Class_Submitted_Text_2.forEach(function(ins_class){
+                if(ins_class.type == CLASS_TYPE.WORD){
+                    Utils.getEl(ins_class.uid).addEventListener('click', function(){
+                        ins_class.update();
+                    });
+                }
+                if(ins_class.type == CLASS_TYPE.CHUNK){
+                    ins_class.addListenerDragStart(ins_class.getCloningData(), i);
+                }
+                i++;
+            });
+
+        }
+
+        document.getElementById("submit_text").addEventListener("click", function(e){
+            submitInputTextToViewText();
+        });
+        document.getElementById("submit_text_2").addEventListener("click", function(e){
+            submitInputTextToViewText2();
+        });
+
+        document.getElementById("input_text").addEventListener("keypress", function(e){
+            if (e.keyCode == 13) {
+                submitInputTextToViewText();
+                return false;
+            }
+        });
+
+        document.getElementById("input_text_2").addEventListener("keypress", function(e){
+            if (e.keyCode == 13) {
+                submitInputTextToViewText2();
+                return false;
+            }
+        });
+
+        document.getElementById("chunk_it").addEventListener("click", function(){
+            updateSubmittedInputTextToViewText();
+        });
+
+        document.getElementById("chunk_it_2").addEventListener("click", function(){
+            updateSubmittedInputTextToViewText2();
+        });
+
+        document.getElementById("result_close").addEventListener("click", function(){
+            document.getElementById("result").style['display'] = 'none';
+        });
+
+        document.getElementById("show_result").addEventListener("click", function(){
+            document.getElementById("result").style['display'] = 'block';
+            document.getElementById("result_textarea").value = extractData();
+        });
+
+
+
+    </script>
+</body>
+</html>
