@@ -155,7 +155,7 @@
 
         <div id="drop_area"></div><br/>
 
-        <button id="show_result">SHOW RESULT</button><br/><br/>
+        <button id="reset_all">RESET ALL</button><button id="show_result">SHOW RESULT</button><br/><br/>
         <pre>iSTS Annotator Tools</pre>
         <pre>Credit: Rio Chandra Rajagukguk (c) 2018</pre>
     </div>
@@ -422,13 +422,26 @@
             }
         }
 
-        var Global_Data = new AllDropArea();
-        // Global_Data.addPairDropArea(pda);
-        Global_Data.addEmptyPairDropArea();
-        Global_Data.all_drop_area_render('drop_area');
-
+        var Global_Data;
         var Ins_Class_Submitted_Text = [];
         var Ins_Class_Submitted_Text_2 = [];
+
+        function resetAll(){
+            Global_Data = new AllDropArea();
+            Global_Data.addEmptyPairDropArea();
+            Global_Data.all_drop_area_render('drop_area');
+
+            Ins_Class_Submitted_Text = [];
+            Ins_Class_Submitted_Text_2 = [];
+
+            document.getElementById("input_text").value = "";
+            document.getElementById("input_text_2").value = "";
+
+            document.getElementById("submitted_text").innerHTML = "";
+            document.getElementById("submitted_text_2").innerHTML = "";
+        }
+
+        resetAll();
 
         function extractData(){
             function printSentence(chunks){
@@ -711,6 +724,10 @@
         document.getElementById("show_result").addEventListener("click", function(){
             document.getElementById("result").style['display'] = 'block';
             document.getElementById("result_textarea").value = extractData();
+        });
+
+        document.getElementById("reset_all").addEventListener("click", function(){
+            resetAll();
         });
 
 
