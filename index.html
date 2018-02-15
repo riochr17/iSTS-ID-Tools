@@ -564,6 +564,21 @@
                         Ins_Class_Submitted_Text.push(wordx2);
                         wordx2.word_render("submitted_text");
                     }
+                }else if(data_input_list[index][0] == ","){
+                    let w1 = data_input_list[index].substr(0, 1);
+                    let w2 = data_input_list[index].substr(1, data_input_list[index].length - 1);
+
+                    if(w1.length > 0){
+                        let wordx1 = new Word(w1);
+                        Ins_Class_Submitted_Text.push(wordx1);
+                        wordx1.word_render("submitted_text");
+                    }
+
+                    if(w2.length > 0){
+                        let wordx2 = new Word(w2);
+                        Ins_Class_Submitted_Text.push(wordx2);
+                        wordx2.word_render("submitted_text");
+                    }
                 }else{
                     let wordx = new Word(data_input_list[index]);
                     Ins_Class_Submitted_Text.push(wordx);
@@ -592,6 +607,21 @@
                 if(data_input_list[index][data_input_list[index].length - 1] == ","){
                     let w1 = data_input_list[index].substr(0, data_input_list[index].length - 1);
                     let w2 = data_input_list[index].substr(data_input_list[index].length - 1, 1);
+
+                    if(w1.length > 0){
+                        let wordx1 = new Word(w1);
+                        Ins_Class_Submitted_Text_2.push(wordx1);
+                        wordx1.word_render("submitted_text_2");
+                    }
+
+                    if(w2.length > 0){
+                        let wordx2 = new Word(w2);
+                        Ins_Class_Submitted_Text_2.push(wordx2);
+                        wordx2.word_render("submitted_text_2");
+                    }
+                }else if(data_input_list[index][0] == ","){
+                    let w1 = data_input_list[index].substr(0, 1);
+                    let w2 = data_input_list[index].substr(1, data_input_list[index].length - 1);
 
                     if(w1.length > 0){
                         let wordx1 = new Word(w1);
