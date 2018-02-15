@@ -543,19 +543,32 @@
 
         function submitInputTextToViewText(){
             // data trimmed and splitted by space
-            let data_input_list = document.getElementById("input_text").value.trim().split(/\s+|,+/);
-            for (var i = 0; i < data_input_list.length; i++) {
-                if(data_input_list[i].length == 0)
-                    data_input_list[i] = ",";
-            }
+            let data_input_list = document.getElementById("input_text").value.trim().split(/\s+/);
             let new_data = "";
             document.getElementById("submitted_text").innerHTML = "";
             garbageArray(Ins_Class_Submitted_Text);
             Ins_Class_Submitted_Text = [];
             for(index in data_input_list){
-                let wordx = new Word(data_input_list[index]);
-                Ins_Class_Submitted_Text.push(wordx);
-                wordx.word_render("submitted_text");
+                if(data_input_list[index][data_input_list[index].length - 1] == ","){
+                    let w1 = data_input_list[index].substr(0, data_input_list[index].length - 1);
+                    let w2 = data_input_list[index].substr(data_input_list[index].length - 1, 1);
+
+                    if(w1.length > 0){
+                        let wordx1 = new Word(w1);
+                        Ins_Class_Submitted_Text.push(wordx1);
+                        wordx1.word_render("submitted_text");
+                    }
+
+                    if(w2.length > 0){
+                        let wordx2 = new Word(w2);
+                        Ins_Class_Submitted_Text.push(wordx2);
+                        wordx2.word_render("submitted_text");
+                    }
+                }else{
+                    let wordx = new Word(data_input_list[index]);
+                    Ins_Class_Submitted_Text.push(wordx);
+                    wordx.word_render("submitted_text");
+                }
             }
 
             Ins_Class_Submitted_Text.forEach(function(ins_class){
@@ -570,19 +583,32 @@
 
         function submitInputTextToViewText2(){
             // data trimmed and splitted by space
-            let data_input_list = document.getElementById("input_text_2").value.trim().split(/\s+|,+/);
-            for (var i = 0; i < data_input_list.length; i++) {
-                if(data_input_list[i].length == 0)
-                    data_input_list[i] = ",";
-            }
+            let data_input_list = document.getElementById("input_text_2").value.trim().split(/\s+/);
             let new_data = "";
             document.getElementById("submitted_text_2").innerHTML = "";
             garbageArray(Ins_Class_Submitted_Text_2);
             Ins_Class_Submitted_Text_2 = [];
             for(index in data_input_list){
-                let wordx = new Word(data_input_list[index]);
-                Ins_Class_Submitted_Text_2.push(wordx);
-                wordx.word_render("submitted_text_2");
+                if(data_input_list[index][data_input_list[index].length - 1] == ","){
+                    let w1 = data_input_list[index].substr(0, data_input_list[index].length - 1);
+                    let w2 = data_input_list[index].substr(data_input_list[index].length - 1, 1);
+
+                    if(w1.length > 0){
+                        let wordx1 = new Word(w1);
+                        Ins_Class_Submitted_Text_2.push(wordx1);
+                        wordx1.word_render("submitted_text_2");
+                    }
+
+                    if(w2.length > 0){
+                        let wordx2 = new Word(w2);
+                        Ins_Class_Submitted_Text_2.push(wordx2);
+                        wordx2.word_render("submitted_text_2");
+                    }
+                }else{
+                    let wordx = new Word(data_input_list[index]);
+                    Ins_Class_Submitted_Text_2.push(wordx);
+                    wordx.word_render("submitted_text_2");
+                }
             }
 
             Ins_Class_Submitted_Text_2.forEach(function(ins_class){
